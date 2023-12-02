@@ -1,0 +1,28 @@
+# Compose file from;
+# https://github.com/GoogleCloudPlatform/pgadapter/blob/postgresql-dialect/docs/emulator.md
+
+version: "3.9"
+services:
+  emulator:
+    image: "gcr.io/cloud-spanner-emulator/emulator"
+    pull_policy: always
+    container_name: spanner-emulator
+    ports:
+      - "9010:9010"
+      - "9020:9020"
+  pgadapter:
+    depends_on:
+      emulator:
+        condition: service_started
+    image: "gcr.io/cloud-spanner-pg-adapter/pgadapter"
+    pull_policy: always
+    container_name: pgadapter-connected-to-emulator
+    command:
+      - "-p test-project"
+      - "-i test-instance"
+      - "-r autoConfigEmulator=true"
+      - "-e emulator:9010"
+      - "-c \"\""
+      - "-x"
+    ports:
+      - "5432:5432"
